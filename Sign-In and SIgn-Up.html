@@ -43,6 +43,8 @@
 
     <main class="flex items-center justify-center min-h-screen pt-24 pb-12 px-4">
 
+    <!---------------------------------LOGIN SECTION--------------------------------->
+
         <div id="loginSection" class="bg-white p-8 md:p-10 rounded-xl shadow-sm border border-gray-100 w-full max-w-[480px]">
             <div class="text-center mb-8">
                 <h1 class="text-4xl font-bold text-[#0f172a] mb-2">Welcome Back</h1>
@@ -68,6 +70,8 @@
                 <button onclick="showSection('userRegSection')" class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-gray-200 text-gray-600 font-semibold hover:bg-gray-50 transition"><i data-lucide="user" class="w-4 h-4"></i> Register as User</button>
             </div>
         </div>
+
+    <!-- ------------------------------ADMIN REGISTRATION------------------------------ -->
 
         <div id="adminRegSection" class="hidden bg-white p-8 md:p-10 rounded-xl shadow-sm border border-gray-100 w-full max-w-[550px]">
             <h1 class="text-3xl font-bold text-center mb-8 text-[#0f172a]">Admin Registration</h1>
@@ -104,6 +108,8 @@
             </form>
             <p class="text-center mt-6 text-sm text-gray-600">Already have an account? <button onclick="showSection('loginSection')" class="text-[#129385] font-bold hover:underline">Login</button></p>
         </div>
+
+    <!-- ------------------------------USER REGISTRATION------------------------------ -->
 
         <div id="userRegSection" class="hidden bg-white p-8 md:p-10 rounded-xl shadow-sm border border-gray-100 w-full max-w-[550px]">
             <h1 class="text-3xl font-bold text-center mb-8 text-[#0f172a]">User Registration</h1>
@@ -142,6 +148,8 @@
             <p class="text-center mt-6 text-sm text-gray-600">Already have an account? <button onclick="showSection('loginSection')" class="text-[#129385] font-bold hover:underline">Login</button></p>
         </div>
 
+    <!-- ------------------------------OTP VERIFICATION------------------------------ -->
+
         <div id="otpSection" class="hidden bg-white p-8 md:p-10 rounded-xl shadow-sm border border-gray-100 w-full max-w-[450px]">
             <div class="text-center mb-6">
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-teal-50 rounded-full mb-4">
@@ -174,6 +182,8 @@
                 </button>
             </div>
         </div>
+    
+    <!-- ------------------------------REGISTRATION SUCCESS------------------------------ -->
 
         <div id="successSection" class="hidden fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 p-4">
             <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center animate-fade-in">
@@ -389,9 +399,7 @@
         }
     });
 
-    /*--------------------------
-            OTP VERIFICATION 
-       --------------------------*/
+    /* OTP VERIFICATION */
     document.getElementById('otpForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const otp = document.getElementById('otpInput').value;
@@ -428,9 +436,7 @@
         alert("A new code has been sent to your email.");
     }
 
-    /* -----------------------------------------------------------
-        LOGIN SUBMISSION 
-    ----------------------------------------------------------- */
+    /*  LOGIN SUBMISSION  */
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
