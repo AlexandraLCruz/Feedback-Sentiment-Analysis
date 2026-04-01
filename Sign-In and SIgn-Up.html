@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Feedback Sentiment Analysis</title>
+
+    <style>
+        .hidden { display: none; }
+        .error-msg { 
+            color: #ef4444; 
+            font-size: 0.7rem; 
+            margin-top: 0.25rem; 
+            font-weight: 600; 
+            transition: all 0.2s ease;
+        }
+        .input-error { border-color: #ef4444 !important; background-color: #fffafb; }
+        
+        /* Animation for the success modal */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased text-gray-900">
+
+    <nav class="flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur-sm fixed w-full top-0 z-10 border-b border-gray-100">
+        <div class="flex items-center gap-2">
+            <div class="bg-[#129385] p-1.5 rounded-lg">
+                <i data-lucide="message-square" class="text-white w-5 h-5"></i>
+            </div>
+            <span class="font-bold text-[#0f172a] text-lg">Feedback Sentiment Analysis</span>
+        </div>
+        <div class="flex items-center gap-8">
+            <a href="#" class="text-gray-500 hover:text-[#129385] transition">Home</a>
+            <button onclick="showSection('loginSection')" class="bg-[#129385] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#0f7d71] transition">Login / Register</button>
+        </div>
+    </nav>
+
+    <main class="flex items-center justify-center min-h-screen pt-24 pb-12 px-4">
+
+        <div id="loginSection" class="bg-white p-8 md:p-10 rounded-xl shadow-sm border border-gray-100 w-full max-w-[480px]">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-[#0f172a] mb-2">Welcome Back</h1>
+                <p class="text-gray-500">Login to access your account</p>
+            </div>
+            <form id="loginForm" class="flex flex-col">
+                <div class="mb-4">
+                    <input type="email" id="loginEmail" required class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Email">
+                </div>
+                <div class="mb-2">
+                    <div class="relative">
+                        <input type="password" id="loginPass" required class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Password">
+                        <button type="button" onclick="togglePassword('loginPass', this)" class="absolute right-3 top-3.5 text-gray-400 hover:text-teal-600">
+                            <i data-lucide="eye-off" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <p id="loginGeneralError" class="error-msg text-center mb-4"></p>
+                <button type="submit" id="loginBtn" class="w-full bg-[#129385] text-white font-bold py-3.5 rounded-lg hover:bg-[#0f7d71] transition">Login</button>
+            </form>
+            <div class="grid grid-cols-2 gap-4 mt-8">
+                <button onclick="showSection('adminRegSection')" class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-teal-500 text-teal-600 font-semibold hover:bg-teal-50 transition"><i data-lucide="shield-check" class="w-4 h-4"></i> Register as Admin</button>
+                <button onclick="showSection('userRegSection')" class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-gray-200 text-gray-600 font-semibold hover:bg-gray-50 transition"><i data-lucide="user" class="w-4 h-4"></i> Register as User</button>
+            </div>
+        </div>
+
+        <div id="adminRegSection" class="hidden bg-white p-8 md:p-10 rounded-xl shadow-sm border border-gray-100 w-full max-w-[550px]">
+            <h1 class="text-3xl font-bold text-center mb-8 text-[#0f172a]">Admin Registration</h1>
+            <form id="adminRegForm" class="flex flex-col">
+                <div class="mb-4">
+                    <input type="text" id="adminOrg" required oninput="capitalizeWords(this)" class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Organization Name">
+                </div>
+                <div class="mb-4">
+                    <input type="text" id="adminName" required oninput="capitalizeWords(this)" class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Admin Name">
+                </div>
+                <div class="mb-4">
+                    <input type="email" id="adminEmail" required class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Email (@gmail.com)">
+                    <p id="adminEmailErr" class="error-msg"></p>
+                </div>
+                <div class="mb-4">
+                    <div class="relative">
+                        <input type="password" id="adminPass" required class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Password">
+                        <button type="button" onclick="togglePassword('adminPass', this)" class="absolute right-3 top-3.5 text-gray-400 hover:text-teal-600">
+                            <i data-lucide="eye-off" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <p id="adminPassErr" class="error-msg"></p>
+                </div>
+                <div class="mb-6">
+                    <div class="relative">
+                        <input type="password" id="adminConfirm" required class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Confirm Password">
+                        <button type="button" onclick="togglePassword('adminConfirm', this)" class="absolute right-3 top-3.5 text-gray-400 hover:text-teal-600">
+                            <i data-lucide="eye-off" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <p id="adminConfirmErr" class="error-msg"></p>
+                </div>
+                <button type="submit" class="w-full bg-[#129385] text-white font-bold py-4 rounded-lg hover:bg-[#0f7d71] transition-all shadow-md active:scale-[0.99]">Register Admin</button>
+            </form>
+            <p class="text-center mt-6 text-sm text-gray-600">Already have an account? <button onclick="showSection('loginSection')" class="text-[#129385] font-bold hover:underline">Login</button></p>
+        </div>
+
+        <div id="userRegSection" class="hidden bg-white p-8 md:p-10 rounded-xl shadow-sm border border-gray-100 w-full max-w-[550px]">
+            <h1 class="text-3xl font-bold text-center mb-8 text-[#0f172a]">User Registration</h1>
+            <form id="userRegForm" class="flex flex-col">
+                <div class="mb-4">
+                    <input type="text" id="userOrgCode" required oninput="this.value = this.value.toUpperCase()" class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Organization Code">
+                    <p id="userCodeErr" class="error-msg"></p>
+                </div>
+                <div class="mb-4">
+                    <input type="text" id="userName" required oninput="capitalizeWords(this)" class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Full Name">
+                </div>
+                <div class="mb-4">
+                    <input type="email" id="userEmail" required class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Email (@gmail.com)">
+                    <p id="userEmailErr" class="error-msg"></p>
+                </div>
+                <div class="mb-4">
+                    <div class="relative">
+                        <input type="password" id="userPass" required class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Password">
+                        <button type="button" onclick="togglePassword('userPass', this)" class="absolute right-3 top-3.5 text-gray-400 hover:text-teal-600">
+                            <i data-lucide="eye-off" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <p id="userPassErr" class="error-msg"></p>
+                </div>
+                <div class="mb-6">
+                    <div class="relative">
+                        <input type="password" id="userConfirm" required class="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-teal-500" placeholder="Confirm Password">
+                        <button type="button" onclick="togglePassword('userConfirm', this)" class="absolute right-3 top-3.5 text-gray-400 hover:text-teal-600">
+                            <i data-lucide="eye-off" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <p id="userConfirmErr" class="error-msg"></p>
+                </div>
+                <button type="submit" class="w-full bg-[#129385] text-white font-bold py-4 rounded-lg hover:bg-[#0f7d71] transition-all shadow-md active:scale-[0.99]">Register User</button>
+            </form>
+            <p class="text-center mt-6 text-sm text-gray-600">Already have an account? <button onclick="showSection('loginSection')" class="text-[#129385] font-bold hover:underline">Login</button></p>
+        </div>
+
+        <div id="otpSection" class="hidden bg-white p-8 md:p-10 rounded-xl shadow-sm border border-gray-100 w-full max-w-[450px]">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-teal-50 rounded-full mb-4">
+                    <i data-lucide="mail" class="text-[#129385] w-8 h-8"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-[#0f172a]">Verify Your Email</h1>
+                <p class="text-sm text-gray-500 mt-2">We have sent a 6-digit OTP to <br><span id="displayEmail" class="font-semibold text-gray-700">user@gmail.com</span></p>
+            </div>
+
+            <form id="otpForm" class="flex flex-col">
+                <div class="mb-6">
+                    <label class="text-xs font-semibold uppercase text-gray-400 mb-2 block tracking-wider">Enter OTP</label>
+                    <input type="text" id="otpInput" maxlength="6" required 
+                        class="w-full px-4 py-4 text-center text-2xl tracking-[1em] font-bold rounded-lg border border-gray-200 focus:ring-2 focus:ring-teal-500 outline-none" 
+                        placeholder="000000">
+                    <p id="otpErr" class="error-msg text-center mt-2"></p>
+                </div>
+                <button type="submit" class="w-full bg-[#129385] text-white font-bold py-4 rounded-lg hover:bg-[#0f7d71] transition-all shadow-md active:scale-[0.99]">
+                    Verify OTP
+                </button>
+            </form>
+
+            <div class="text-center mt-8 space-y-4">
+                <p class="text-sm text-gray-500">Did not receive the code?</p>
+                <button onclick="resendOTP()" class="flex items-center justify-center gap-2 w-full text-[#129385] font-bold text-sm hover:underline">
+                    <i data-lucide="rotate-cw" class="w-4 h-4"></i> Resend OTP
+                </button>
+                <button onclick="showSection('loginSection')" class="text-gray-400 text-sm hover:text-gray-600 flex items-center justify-center gap-2 w-full pt-4 border-t">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Login
+                </button>
+            </div>
+        </div>
+
+        <div id="successSection" class="hidden fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center animate-fade-in">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-teal-100 mb-6">
+                    <i data-lucide="check" class="text-teal-600 w-10 h-10"></i>
+                </div>
+
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Registration Successful!</h2>
+                <p class="text-gray-500 text-sm mb-8">Your admin account has been created successfully.</p>
+
+                <div class="bg-teal-50 border border-teal-200 rounded-xl p-5 text-left">
+                    <div class="flex items-center gap-2 text-teal-700 font-semibold mb-3">
+                        <i data-lucide="key" class="w-4 h-4"></i> Your Organization Code
+                    </div>
+                    <p class="text-xs text-gray-500 mb-3">Share this code with your employees:</p>
+                    
+                    <div class="flex items-center justify-between bg-white border-2 border-teal-300 rounded-lg p-3">
+                        <span id="displayOrgCode" class="font-mono font-black text-teal-800 text-xl tracking-wider uppercase">LOADING...</span>
+                        <button onclick="copyToClipboard()" class="p-2 bg-teal-500 hover:bg-teal-600 text-white rounded-md transition-colors">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <div class="mt-4 flex gap-3 p-3 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-800">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 flex-shrink-0"></i>
+                        <div>
+                            <span class="font-bold block">Important:</span>
+                            Save this code securely. Users need it to join your organization.
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="window.location.href='dashboard.html'" class="w-full mt-8 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-[1.02]">
+                    Continue to Dashboard
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+   <script>
+    lucide.createIcons();
+
+    // Variable to store registration data between steps
+    window.tempData = {}; 
+
+    /* -----------------------------------------------------------
+        UI & SECTION NAVIGATION
+    ----------------------------------------------------------- */
+    function showSection(id) {
+        const sections = ['loginSection', 'adminRegSection', 'userRegSection', 'otpSection', 'successSection'];
+        sections.forEach(s => {
+            const el = document.getElementById(s);
+            if (el) el.classList.add('hidden');
+        });
+        const target = document.getElementById(id);
+        if (target) {
+            target.classList.remove('hidden');
+            // Ensure flex is used for the modal overlay if it's the success section
+            if(id === 'successSection') target.classList.add('flex');
+        }
+        
+        clearAllErrors();
+        lucide.createIcons(); 
+    }
+
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        input.type = input.type === 'password' ? 'text' : 'password';
+        btn.innerHTML = `<i data-lucide="${input.type === 'password' ? 'eye-off' : 'eye'}" class="w-5 h-5"></i>`;
+        lucide.createIcons();
+    }
+
+    function clearAllErrors() {
+        document.querySelectorAll('.error-msg').forEach(el => el.innerText = "");
+        document.querySelectorAll('input').forEach(el => el.classList.remove('input-error'));
+    }
+
+    function copyToClipboard() {
+        const code = document.getElementById('displayOrgCode').innerText;
+        navigator.clipboard.writeText(code).then(() => {
+            alert("Organization code copied to clipboard!");
+        });
+    }
+
+    /* -----------------------------------------------------------
+        TEXT FORMATTING (Auto-Capitalization)
+    ----------------------------------------------------------- */
+    function capitalizeWords(input) {
+        let words = input.value.split(' ');
+        for (let i = 0; i < words.length; i++) {
+            if (words[i].length > 0) {
+                words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
+            }
+        }
+        input.value = words.join(' ');
+    }
+
+    /* -----------------------------------------------------------
+        VALIDATION LOGIC
+    ----------------------------------------------------------- */
+    function runValidation(type) {
+        const prefix = type === 'admin' ? 'admin' : 'user';
+        const email = document.getElementById(`${prefix}Email`);
+        const pass = document.getElementById(`${prefix}Pass`);
+        const confirm = document.getElementById(`${prefix}Confirm`);
+        
+        const emailErr = document.getElementById(`${prefix}EmailErr`);
+        const passErr = document.getElementById(`${prefix}PassErr`);
+        const confirmErr = document.getElementById(`${prefix}ConfirmErr`);
+
+        let isValid = true;
+        clearAllErrors();
+
+        if (!email.value.toLowerCase().endsWith('@gmail.com')) {
+            emailErr.innerText = "Email must end with @gmail.com";
+            email.classList.add('input-error');
+            isValid = false;
+        }
+
+        const val = pass.value;
+        let passMsg = "";
+        if (val.length < 8) passMsg = "Minimum 8 characters required.";
+        else if (!/[A-Z]/.test(val)) passMsg = "Must contain an uppercase letter.";
+        else if (!/[0-9]/.test(val)) passMsg = "Must contain a number.";
+
+        if (passMsg !== "") {
+            passErr.innerText = passMsg;
+            pass.classList.add('input-error');
+            isValid = false;
+        }
+
+        if (val !== confirm.value) {
+            confirmErr.innerText = "Passwords do not match.";
+            confirm.classList.add('input-error');
+            isValid = false;
+        }
+        return isValid;
+    }
+
+    /* -----------------------------------------------------------
+        FORM SUBMISSIONS
+    ----------------------------------------------------------- */
+
+    /* ADMIN REGISTRATION */
+    document.getElementById('adminRegForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if(!runValidation('admin')) return;
+
+        // Save data for the OTP step
+        window.tempData = {
+            email: document.getElementById('adminEmail').value,
+            password: document.getElementById('adminPass').value,
+            full_name: document.getElementById('adminName').value,
+            org_name: document.getElementById('adminOrg').value,
+            role: 'admin'
+        };
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/register/admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: window.tempData.email, 
+                    password: window.tempData.password 
+                })
+            });
+
+            if (response.ok) {
+                document.getElementById('displayEmail').innerText = window.tempData.email;
+                showSection('otpSection');
+            } else {
+                const err = await response.json();
+                alert("Error: " + err.detail);
+            }
+        } catch (err) {
+            alert("Connection to backend failed. Is Uvicorn running?");
+        }
+    });
+
+    /* USER REGISTRATION */
+    document.getElementById('userRegForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if(!runValidation('user')) return;
+
+        window.tempData = {
+            email: document.getElementById('userEmail').value,
+            password: document.getElementById('userPass').value,
+            full_name: document.getElementById('userName').value,
+            org_code: document.getElementById('userOrgCode').value,
+            role: 'user'
+        };
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/register/user', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email: window.tempData.email, 
+                    password: window.tempData.password 
+                })
+            });
+
+            if (response.ok) {
+                document.getElementById('displayEmail').innerText = window.tempData.email;
+                showSection('otpSection');
+            } else {
+                const err = await response.json();
+                alert("Error: " + err.detail);
+            }
+        } catch (err) {
+            alert("Connection failed.");
+        }
+    });
+
+    /* OTP VERIFICATION */
+    document.getElementById('otpForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const otp = document.getElementById('otpInput').value;
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...window.tempData,
+                    token: otp
+                })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                if(window.tempData.role === 'admin') {
+                    // Update the code display before showing the section
+                    document.getElementById('displayOrgCode').innerText = result.org_code;
+                    showSection('successSection');
+                } else {
+                    alert("Registration Successful! You can now login.");
+                    showSection('loginSection');
+                }
+            } else {
+                alert("Verification Failed: " + result.detail);
+            }
+        } catch (err) {
+            alert("Server error during verification.");
+        }
+    });
+
+    function resendOTP() {
+        alert("A new code has been sent to your email.");
+    }
+
+    /* -----------------------------------------------------------
+        LOGIN SUBMISSION 
+    ----------------------------------------------------------- */
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPass').value;
+            const loginBtn = document.getElementById('loginBtn');
+
+            try {
+                loginBtn.disabled = true;
+                loginBtn.innerText = "Logging in...";
+
+                const response = await fetch('http://127.0.0.1:8000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 1. Store user data so feedback.html or admin-dashboard.html can use it
+                    localStorage.setItem('user_data', JSON.stringify(result.user));
+                    localStorage.setItem('supabase_session', JSON.stringify(result.session));
+
+                    // 2. Redirect based on role
+                    if (result.user.role === 'admin') {
+                        window.location.href = 'admin-dashboard.html';
+                    } else {
+                        window.location.href = 'feedback(User).html'; 
+                    }
+                } else {
+                    document.getElementById('loginGeneralError').innerText = result.detail || "Invalid email or password";
+                    document.getElementById('loginEmail').classList.add('input-error');
+                    document.getElementById('loginPass').classList.add('input-error');
+                }
+            } catch (err) {
+                alert("Connection to backend failed. Is your Python server running?");
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerText = "Login";
+            }
+        });
+</script>
+</body>
+</html>
